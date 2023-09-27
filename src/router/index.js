@@ -27,6 +27,11 @@ const routes = [
     path: '/manageTable',
     name: 'manageTable',
     component: () => import('../views/TableView')
+  },
+  {
+    path: '/manageProduct',
+    name: 'manageProduct',
+    component: () => import('../views/ProductView')
   }
 ]
 

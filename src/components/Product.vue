@@ -2,14 +2,14 @@
 <div>
 <v-data-table
     :headers="headers"
-    :items="employeeItem"
+    :items="productItem"
     class="elevation-1"
   >
     <template v-slot:top>
       <v-toolbar
         flat
       >
-        <v-toolbar-title>จัดการข้อมูล</v-toolbar-title>
+        <v-toolbar-title>Table Product</v-toolbar-title>
         <v-divider
           class="mx-4"
           inset
@@ -27,9 +27,7 @@
 
       </v-toolbar>
     </template>
-    <template v-slot:[`item.role`]= "{ item }">
-      {{ item.role === null ? '' : item.role.name }}
-    </template>
+    
     <template v-slot:[`item.actions`] = "{ item }">
       <v-btn small outlined @click="openDialog('edit', item)" color="blue">
       <v-icon>
@@ -69,8 +67,8 @@
                     md="6"
                   >
                     <v-text-field
-                      v-model="firstname"
-                      label="ชื่อ"
+                      v-model="productId"
+                      label="รหัสสินค้า"
                     ></v-text-field>
                   </v-col>
                   <v-col
@@ -79,8 +77,8 @@
                     md="6"
                   >
                     <v-text-field
-                      v-model="lastname"
-                      label="นามสกุล"
+                      v-model="productName"
+                      label="ชื่อสินค้า"
                     ></v-text-field>
                   </v-col>
                   <v-col
@@ -89,8 +87,8 @@
                     md="6"
                   >
                     <v-text-field
-                      v-model="salary"
-                      label="เงินเดือน"
+                      v-model="productPrice"
+                      label="ราคาสินค้า"
                     ></v-text-field>
                   </v-col>
                   <v-col
@@ -99,8 +97,8 @@
                     md="6"
                   >
                     <v-text-field
-                      v-model="roles"
-                      label="ตำแหน่ง"
+                      v-model="productAmount"
+                      label="จำนวนสินค้า"
                     ></v-text-field>
                   </v-col>
                   <v-col
@@ -134,7 +132,7 @@
         </v-dialog>
         <v-dialog v-model="dialogDelete" max-width="500px">
           <v-card>
-            <v-card-title class="text-h5">ตุณต้องการลบข้อมูลนี้ในตารางใช่ หรือ ไม่?</v-card-title>
+            <v-card-title class="text-h5">Are you sure you want to delete this item?</v-card-title>
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="blue darken-1" text @click="closeDelete">ยกเลิก</v-btn>
@@ -149,10 +147,11 @@
 <script>
 export default {
   data: () => ({
-    firstname: '',
-    lastname: '',
-    salary: '',
-    roles: '',
+    
+    productId: '',
+    productName: '',
+    productPrice: '',
+    productAmount: '',
     dialogCreate: false,
     dialogDelete: false,
     headers: [
@@ -162,13 +161,13 @@ export default {
         sortable: false,
         value: 'id'
       },
-      { text: 'ชื่อ', value: 'firstName' },
-      { text: 'นามสกุล', value: 'lastName' },
-      { text: 'เงินเดือน', value: 'salary' },
-      { text: 'ตำแหน่ง', value: 'role' },
+      { text: 'รหัสสินค้า', value: 'productId' },
+      { text: 'ชื่อสินค้า', value: 'productName' },
+      { text: 'ราคาสินค้า', value: 'productPrice' },
+      { text: 'จำนวนสินค้า', value: 'productAmount' },
       { text: 'จัดการ', value: 'actions', sortable: false }
     ],
-    employeeItem: [],
+    productItem: [],
     editedIndex: -1,
     editedItem: {
       name: '',
@@ -185,7 +184,7 @@ export default {
       protein: 0
     },
     formTitle: '',
-    idEmployee: '',
+    idProduct: '',
     idforDelete: ''
   }),
 
@@ -203,16 +202,15 @@ export default {
   },
 
   methods: {
-    async initialize () {
-      this.employeeItem = []
+    async initialize() {
       try {
-        var data = await this.axios.get('http://172.28.48.249:9000/employee')
-        console.log('data employee ====>', data)
-        this.employeeItem = data.data
+        const response = await this.axios.get('http://172.28.48.249:9000/product');
+        this.productItem = response.data;
       } catch (error) {
-
+        console.error(error);
       }
     },
+
     openDialog (Action, item) {
       this.formTitle = ''
       if (Action === 'add') {
@@ -222,17 +220,17 @@ export default {
       } else {
         this.formTitle = 'แก้ไขข้อมูล'
         this.dialogCreate = true
-        this.firstname = item.firstName
-        this.lastname = item.lastName
-        this.salary = item.salary
-        this.roles = item.role.name
-        this.idEmployee = item.id
+        this.productId = item.productId
+        this.productName = item.productName
+        this.productPrice = item.productPrice
+        this.productAmount = item.productAmount
+        this.idProduct = item.id
       }
     },
 
     editItem (item) {
       console.log('item select', item)
-      this.editedIndex = this.employeeItem.indexOf(item)
+      this.editedIndex = this.productItem.indexOf(item)
       this.editedItem = Object.assign({}, item)
       this.dialog = true
     },
@@ -244,7 +242,7 @@ export default {
 
     async deleteItemConfirm () {
       try {
-        var response = await this.axios.delete('http://172.28.48.249:9000/employee/' + this.idforDelete)
+        var response = await this.axios.delete('http://172.28.48.249:9000/product/' + this.idforDelete)
         this.initialize()
       } catch (error) {
         console.log(error.message)
@@ -275,19 +273,15 @@ export default {
 
     async save (action) {
       var data = {
-        firstName: this.firstname,
-        lastName: this.lastname,
-        salary: this.salary,
-        role: {
-          name: this.roles
-        },
-        skills: [
-          { skill: '' }
-        ]
+        productId: this.productId,
+        productName: this.productName,
+        productPrice: this.productPrice,
+        productAmount: this.productAmount
+        
       }
       if (action === 'เพิ่มข้อมูล') {
         try {
-          var dataResponse = await this.axios.post('http://172.28.48.249:9000/employee', data)
+          var dataResponse = await this.axios.post('http://172.28.48.249:9000/product', data)
           console.log('dataResponse ====>', dataResponse)
           this.close()
           this.initialize()
@@ -296,7 +290,7 @@ export default {
         }
       } else {
         try {
-          var dataResponse = await this.axios.put('http://172.28.48.249:9000/employee/' + this.idEmployee, data)
+          var dataResponse = await this.axios.put('http://172.28.48.249:9000/product/' + this.idProduct, data)
           console.log('dataResponse ====>', dataResponse)
           this.close()
           this.initialize()

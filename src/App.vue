@@ -30,9 +30,17 @@
       <v-btn
 
         text
+        @click="goToProduct()"
+      >
+      Connect Backend
+      </v-btn>
+
+      <v-btn
+
+        text
         @click="goToManage()"
       >
-        การจัดการข้อมูล
+        หน้าจัดการข้อมูล
       </v-btn>
 
       <v-btn
@@ -64,6 +72,9 @@ export default {
     },
     goToManage(){
       this.$router.push({ path: '/manageTable'}).catch(()=>{})
+    },
+    goToProduct(){
+      this.$router.push({ path: '/manageProduct'}).catch(()=>{})
     }
   }
 }
